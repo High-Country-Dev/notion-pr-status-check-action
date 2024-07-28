@@ -71,3 +71,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License.
+
+## Running Locally
+
+PR*NUMBER=12 GITHUB_REPOSITORY=high-country-dev/farmers GITHUB_TOKEN=ghp***_ NOTION*TOKEN=secret*_** NOTION_DATABASE_ID=\*\*\* pnpm -F scripts exec tsx src/notionPrStatusCheck.ts
