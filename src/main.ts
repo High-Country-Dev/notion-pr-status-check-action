@@ -170,6 +170,7 @@ async function run(): Promise<void> {
     const notion = new Client({ auth: notionToken });
 
     const context = github.context;
+    const runId = process.env.GITHUB_RUN_ID ?? context.runId;
     const repo = context.repo;
 
     let currentPR: PullRequest;
@@ -220,9 +221,14 @@ async function run(): Promise<void> {
       )
     );
 
+    const runUrl = `https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId}`;
+
     const commentBody = `# Notion Task Status Check
 
-${results.join("\n")}`;
+${results.join("\n")}
+
+[View run details or rerun](${runUrl})
+`;
 
     const { data: comments } = await octokit.rest.issues.listComments({
       ...repo,

@@ -33052,7 +33052,7 @@ async function getRecentMergedPRs(octokit, repo, baseBranch, sourceBranch) {
     }));
 }
 async function run() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     try {
         const githubToken = (_a = process.env.GITHUB_TOKEN) !== null && _a !== void 0 ? _a : core.getInput("github-token");
         const notionToken = (_b = process.env.NOTION_TOKEN) !== null && _b !== void 0 ? _b : core.getInput("notion-token");
@@ -33061,6 +33061,7 @@ async function run() {
         const octokit = github.getOctokit(githubToken);
         const notion = new client_1.Client({ auth: notionToken });
         const context = github.context;
+        const runId = (_e = process.env.GITHUB_RUN_ID) !== null && _e !== void 0 ? _e : context.runId;
         const repo = context.repo;
         let currentPR;
         if (context.payload.pull_request) {
@@ -33086,9 +33087,13 @@ async function run() {
             mergedPRs = [currentPR];
         }
         const results = await Promise.all(mergedPRs.map((pr) => processPullRequest(pr, notion, notionDatabaseId, baseBranch, stagingEnvs, mainEnvs)));
+        const runUrl = `https://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId}`;
         const commentBody = `# Notion Task Status Check
 
-${results.join("\n")}`;
+${results.join("\n")}
+
+[View run details or rerun](${runUrl})
+`;
         const { data: comments } = await octokit.rest.issues.listComments({
             ...repo,
             issue_number: currentPR.number,
