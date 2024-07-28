@@ -1,0 +1,15 @@
+name: "Notion PR Status Check"
+description: "Check Notion task status for PRs"
+inputs:
+  github-token:
+    description: "GitHub token"
+    required: true
+  notion-token:
+    description: "Notion API token"
+    required: true
+  notion-database-id:
+    description: "Notion database ID"
+    required: true
+runs:
+  using: "node20"
+  main: "dist/index.js"
