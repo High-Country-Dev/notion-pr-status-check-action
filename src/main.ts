@@ -8,6 +8,11 @@ import type {
   PartialPageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 
+const stagingDeploymentRegex =
+  /^[Ss]taging [Dd]eployment - \d{2,4}-\d{2}-\d{2}$/;
+const prodDeploymentRegex =
+  /^[Pp]roduction [Dd]eployment - \d{2,4}-\d{2}-\d{2}$/;
+
 interface PullRequest {
   number: number;
   title: string;
@@ -98,11 +103,14 @@ async function processPullRequest(
   const taskResp = await getNotionTaskStatus(notion, notionDatabaseId, taskId);
   const status = taskResp?.status;
 
+  const isStagingDeployment = stagingDeploymentRegex.test(pr.title);
+  const isProdDeployment = prodDeploymentRegex.test(pr.title);
+
   const forThisBaseBranch =
     baseBranch === "staging"
-      ? stagingEnvs.some((e) => status?.includes(e))
+      ? stagingEnvs.some((e) => status?.includes(e)) || isStagingDeployment
       : baseBranch === "master" || baseBranch === "main"
-      ? mainEnvs.some((e) => status?.includes(e))
+      ? mainEnvs.some((e) => status?.includes(e)) || isProdDeployment
       : false;
 
   const prettyTitle = pr.title.replace(

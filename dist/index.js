@@ -32966,6 +32966,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(6733));
 const github = __importStar(__nccwpck_require__(3695));
 const client_1 = __nccwpck_require__(6433);
+const stagingDeploymentRegex = /^[Ss]taging [Dd]eployment - \d{2,4}-\d{2}-\d{2}$/;
+const prodDeploymentRegex = /^[Pp]roduction [Dd]eployment - \d{2,4}-\d{2}-\d{2}$/;
 const isPageObjectResponse = (val) => {
     return val ? "properties" in val : false;
 };
@@ -33015,10 +33017,12 @@ async function processPullRequest(pr, notion, notionDatabaseId, baseBranch, stag
     }
     const taskResp = await getNotionTaskStatus(notion, notionDatabaseId, taskId);
     const status = taskResp === null || taskResp === void 0 ? void 0 : taskResp.status;
+    const isStagingDeployment = stagingDeploymentRegex.test(pr.title);
+    const isProdDeployment = prodDeploymentRegex.test(pr.title);
     const forThisBaseBranch = baseBranch === "staging"
-        ? stagingEnvs.some((e) => status === null || status === void 0 ? void 0 : status.includes(e))
+        ? stagingEnvs.some((e) => status === null || status === void 0 ? void 0 : status.includes(e)) || isStagingDeployment
         : baseBranch === "master" || baseBranch === "main"
-            ? mainEnvs.some((e) => status === null || status === void 0 ? void 0 : status.includes(e))
+            ? mainEnvs.some((e) => status === null || status === void 0 ? void 0 : status.includes(e)) || isProdDeployment
             : false;
     const prettyTitle = pr.title.replace(/\[MD-\d+\]/, (taskResp === null || taskResp === void 0 ? void 0 : taskResp.url) ? `[MD-${taskId}](${taskResp.url})` : `[MD-${taskId}]`);
     return `${forThisBaseBranch ? "✅" : "❌"} PR #${pr.number} ${prettyTitle} ${status ? `\`(${status})\`` : ""}`;
